@@ -1,5 +1,4 @@
 # Zest
-I built Zest because I was tired of every live wallpaper app needing a paid subscription, a upfront payment, or a limited free trial. Zest is 100% free, open-source, has zero paywalls, and uses minimal CPU and battery.
 ---
 ## Key Features
 * **Battery & CPU Efficient**: Automatically pauses wallpaper playback when other windows cover the screen, when apps are fullscreen, when running on battery power, or when Low Power Mode is active.
