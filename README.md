@@ -11,7 +11,9 @@ I built Zest because I was tired of every live wallpaper utility needing a paid 
 ---
 
 # Screenshots
-<img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 37 PM" src="https://github.com/user-attachments/assets/a1aae2e1-7b46-45df-9786-c9a3ba346637" /> <img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 53 PM" src="https://github.com/user-attachments/assets/a071a7d1-1cf9-474e-982e-e34468a9ab82" /> <img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 53 PM" src="https://github.com/user-attachments/assets/12327f20-e073-4c3f-8eca-cce9a7da6926" /> <img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 53 PM" src="https://github.com/user-attachments/assets/91f4a6d3-d796-4cc8-bfe2-97e014b0da1a" />
+<img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 37 PM" src="https://github.com/user-attachments/assets/a1aae2e1-7b46-45df-9786-c9a3ba346637" /> <img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 53 PM" src="https://github.com/user-attachments/assets/a071a7d1-1cf9-474e-982e-e34468a9ab82" /> <img width="800" height="600" alt="Screenshot 2026-06-23 at 11 30 53 PM" src="https://github.com/user-attachments/assets/12327f20-e073-4c3f-8eca-cce9a7da6926" /> <img width="600" height="800" alt="Screenshot 2026-06-23 at 11 30 10 PM" src="https://github.com/user-attachments/assets/f1935bfd-1802-4ba8-9ddd-ebc6b3b08db9" />
+
+
 
 ## Requirements
 * **Operating System**: macOS 13.0 (Ventura) or newer.
