@@ -16,7 +16,7 @@ I built Zest because I was tired of every live wallpaper app needing a paid subs
 
 ## Requirements
 * **Operating System**: macOS 13.0 (Ventura) or newer.
-* **Hardware**: Apple Silicon (M1/M2/M3/M4) or Intel-based Macs.
+* **Hardware**: Apple Silicon (M1/M2/M3/M4/M5) or Intel-based Macs.
 ---
 ## Installation
 ### Download pre-built DMG
