@@ -1,5 +1,4 @@
 # Zest
-**Zest** is a super lightweight, completely free, and open-source live wallpaper application for macOS. 
 I built Zest because I was tired of every live wallpaper utility needing a paid subscription, a upfront payment, or a limited free trial. Zest is 100% free, open-source, has zero paywalls, and uses minimal CPU and battery.
 ---
 ## Key Features
