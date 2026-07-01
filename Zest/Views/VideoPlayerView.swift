@@ -22,7 +22,7 @@ struct VideoPlayerView: NSViewRepresentable {
     private func configure(_ view: PlayerContainerView) {
         if view.player == nil || view.currentURL != url {
             view.cleanUpPlayer()
-            
+
             let asset = AVURLAsset(url: url)
             let item = AVPlayerItem(asset: asset)
             let player = AVPlayer(playerItem: item)
@@ -34,19 +34,14 @@ struct VideoPlayerView: NSViewRepresentable {
             view.setupEndObserver()
             view.attachStatusObserver()
         }
-        
 
         view.playAudio = playAudio
-        
 
         view.isLooping = isLooping
 
-
         view.apply(transform: transform)
 
-
         view.updateVolume()
-
 
         if let player = view.player {
             let shouldPause = (SettingsManager.shared.pauseInFullscreen && view.isAnyAppFullscreen()) ||
@@ -72,7 +67,7 @@ final class PlayerContainerView: NSView {
     private var endObserver: NSObjectProtocol?
     private var statusObserver: NSKeyValueObservation?
     private var timeObserver: Any?
-    
+
     private var workspaceObserver: NSObjectProtocol?
     private var fullscreenTimer: Timer?
     private var lastShouldBeMuted: Bool?
@@ -87,7 +82,6 @@ final class PlayerContainerView: NSView {
         playerLayer.isHidden = false
         layer?.addSublayer(playerLayer)
         playerLayer.needsDisplayOnBoundsChange = true
-        
 
         workspaceObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification,
@@ -96,7 +90,6 @@ final class PlayerContainerView: NSView {
         ) { [weak self] _ in
             self?.handleAppStateChange()
         }
-        
 
         NotificationCenter.default.addObserver(
             forName: NSWorkspace.didDeactivateApplicationNotification,
@@ -105,39 +98,52 @@ final class PlayerContainerView: NSView {
         ) { [weak self] _ in
             self?.handleAppStateChange()
         }
-        
+
         fullscreenTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
             self?.checkPeriodicStates()
         }
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleVolumeChanged),
             name: .wallpaperVolumeChanged,
             object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handlePowerStateChanged),
             name: Notification.Name.NSProcessInfoPowerStateDidChange,
             object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handlePauseToggled),
             name: .wallpaperPauseToggled,
             object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleSystemWake),
             name: .wallpaperSystemWake,
             object: nil
         )
-        
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLockPause),
+            name: .wallpaperLockPause,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLockResume),
+            name: .wallpaperLockResume,
+            object: nil
+        )
 
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
@@ -145,7 +151,6 @@ final class PlayerContainerView: NSView {
             name: NSWorkspace.didWakeNotification,
             object: nil
         )
-        
 
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.activeSpaceDidChangeNotification,
@@ -176,7 +181,6 @@ final class PlayerContainerView: NSView {
             guard let self, self.isLooping, let player = self.player else { return }
             player.seek(to: .zero)
             player.play()
-            
 
             self.currentVolumeLevel = 0.0
             self.updateVolume()
@@ -191,27 +195,25 @@ final class PlayerContainerView: NSView {
             self.timeObserver = nil
         }
         guard let player = player else { return }
-        
+
         let interval = CMTime(seconds: 0.1, preferredTimescale: 600)
         timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self, let duration = player.currentItem?.duration, duration.isNumeric else { return }
-            
+
             let totalSeconds = CMTimeGetSeconds(duration)
             let currentSeconds = CMTimeGetSeconds(time)
-            
+
             let fadeOutDuration = SettingsManager.shared.fadeOutDuration
             let remainingSeconds = totalSeconds - currentSeconds
-            
 
             if remainingSeconds > 0 && remainingSeconds <= fadeOutDuration {
                 let muteWhenInactive = SettingsManager.shared.muteWhenInactive
                 let shouldBeMuted = (muteWhenInactive && !self.isAppCurrentlyActiveCached) || !self.playAudio
-                
+
                 if !shouldBeMuted {
                     let progress = remainingSeconds / fadeOutDuration
                     let baseVol = Float(SettingsManager.shared.volume)
                     let targetVol = baseVol * Float(progress)
-                    
 
                     if self.fadeTimer == nil {
                         player.volume = targetVol
@@ -274,7 +276,6 @@ final class PlayerContainerView: NSView {
         playerLayer.transform = t
         CATransaction.commit()
     }
-    
 
     func isAppActive(windowList: [[String: Any]]? = nil) -> Bool {
 
@@ -284,14 +285,12 @@ final class PlayerContainerView: NSView {
         }
         let activePid = activeApp.processIdentifier
         let zestPid = ProcessInfo.processInfo.processIdentifier
-        
+
         let bid = activeApp.bundleIdentifier ?? ""
         if activePid == zestPid || bid == "com.apple.finder" || bid == "com.apple.dock" || bid == "com.apple.WindowManager" || bid.contains("Zest") {
             isAppCurrentlyActiveCached = true
             return true
         }
-        
-
 
         let list: [[String: Any]]
         if let windowList {
@@ -300,7 +299,6 @@ final class PlayerContainerView: NSView {
             let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
             list = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] ?? []
         }
-        
 
         let hasNormalWindows = list.contains { window in
             guard let ownerPID = window[kCGWindowOwnerPID as String] as? Int,
@@ -312,25 +310,25 @@ final class PlayerContainerView: NSView {
             }
             return bounds.width > 100 && bounds.height > 100
         }
-        
+
         let result = !hasNormalWindows
         isAppCurrentlyActiveCached = result
         return result
     }
-    
+
     private func handleAppStateChange() {
         checkFullscreenState()
         updateVolume()
     }
-    
+
     @objc private func handleVolumeChanged() {
         updateVolume()
     }
-    
+
     @objc private func handlePowerStateChanged() {
         checkBatteryState()
     }
-    
+
     @objc private func handlePauseToggled() {
         guard let player = player else { return }
         if WallpaperManager.shared.isPaused {
@@ -340,7 +338,7 @@ final class PlayerContainerView: NSView {
             checkFullscreenState()
         }
     }
-    
+
     @objc private func handleSystemWake() {
         guard let player = player else { return }
 
@@ -354,50 +352,84 @@ final class PlayerContainerView: NSView {
             }
         }
     }
-    
+
+    @objc private func handleLockPause() {
+        player?.pause()
+    }
+
+    @objc private func handleLockResume() {
+        guard let player = player else { return }
+        if WallpaperManager.shared.isPaused == false {
+            let shouldPause = (SettingsManager.shared.pauseInFullscreen && isAnyAppFullscreen()) ||
+                              (SettingsManager.shared.pauseOnBattery && isCurrentlyOnBattery()) ||
+                              (SettingsManager.shared.pauseOnLowPowerMode && isLowPowerMode()) ||
+                              (SettingsManager.shared.pauseWhenFocused && isAnyAppFocusedOrSemiFullscreen())
+            if !shouldPause {
+                player.play()
+            }
+        }
+    }
+
     private var fadeTimer: Timer?
     private var currentFadeTarget: Float = 1.0
     private var currentFadeStep: Float = 0.0
-    private var currentVolumeLevel: Float = 1.0
+    private var currentVolumeLevel: Float = -1.0
 
     func updateVolume() {
         guard let player = player else { return }
         let muteWhenInactive = SettingsManager.shared.muteWhenInactive
-        let shouldBeMuted = (muteWhenInactive && !isAppActive()) || !playAudio
+        let isLocked = WallpaperManager.shared.isScreenLocked
+        let shouldBeMuted = (muteWhenInactive && !isAppActive()) || !playAudio || isLocked
         lastShouldBeMuted = shouldBeMuted
-        
+
         let targetVol: Float = shouldBeMuted ? 0.0 : Float(SettingsManager.shared.volume)
-        
+
+        if currentVolumeLevel < 0 {
+            currentVolumeLevel = targetVol
+            player.volume = targetVol
+            player.isMuted = shouldBeMuted
+            lastShouldBeMuted = shouldBeMuted
+            return
+        }
+
+        if lastShouldBeMuted == shouldBeMuted {
+            fadeTimer?.invalidate()
+            fadeTimer = nil
+            player.volume = targetVol
+            player.isMuted = shouldBeMuted
+            currentVolumeLevel = targetVol
+            lastShouldBeMuted = shouldBeMuted
+            return
+        }
+
+        lastShouldBeMuted = shouldBeMuted
 
         fadeTimer?.invalidate()
         fadeTimer = nil
-        
+
         let duration = shouldBeMuted ? SettingsManager.shared.fadeOutDuration : SettingsManager.shared.fadeInDuration
         if duration <= 0.01 {
-
             player.isMuted = shouldBeMuted
             player.volume = targetVol
             currentVolumeLevel = targetVol
             return
         }
-        
 
         player.isMuted = false
         currentFadeTarget = targetVol
-        
+
         let steps = 30
         let interval = duration / Double(steps)
         let delta = (targetVol - currentVolumeLevel) / Float(steps)
-        
+
         var stepCount = 0
-        fadeTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] timer in
-            guard let self, let player = self.player else {
-                timer.invalidate()
+        let timer = Timer(timeInterval: interval, repeats: true) { [weak self] t in
+            guard let self = self, let player = self.player else {
+                t.invalidate()
                 return
             }
             stepCount += 1
             self.currentVolumeLevel += delta
-            
 
             if targetVol > 0 {
                 self.currentVolumeLevel = min(self.currentVolumeLevel, targetVol)
@@ -405,18 +437,20 @@ final class PlayerContainerView: NSView {
                 self.currentVolumeLevel = max(self.currentVolumeLevel, 0.0)
             }
             player.volume = self.currentVolumeLevel
-            
+
             if stepCount >= steps || self.currentVolumeLevel == targetVol {
                 player.volume = targetVol
                 if targetVol == 0 {
                     player.isMuted = true
                 }
-                timer.invalidate()
+                t.invalidate()
                 self.fadeTimer = nil
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        fadeTimer = timer
     }
-    
+
     func isAnyAppFocusedOrSemiFullscreen(windowList: [[String: Any]]? = nil) -> Bool {
 
         guard let frontApp = NSWorkspace.shared.frontmostApplication,
@@ -427,7 +461,7 @@ final class PlayerContainerView: NSView {
               frontApp.activationPolicy == .regular else {
             return false
         }
-        
+
         let list: [[String: Any]]
         if let windowList {
             list = windowList
@@ -435,9 +469,9 @@ final class PlayerContainerView: NSView {
             let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
             list = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] ?? []
         }
-        
+
         let visibleFrame = NSScreen.main?.visibleFrame ?? .zero
-        
+
         for window in list {
             guard let ownerPID = window[kCGWindowOwnerPID as String] as? Int,
                   ownerPID == frontApp.processIdentifier,
@@ -445,30 +479,25 @@ final class PlayerContainerView: NSView {
                   let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
                 continue
             }
-            
 
             if let layer = window[kCGWindowLayer as String] as? Int, layer == 0 {
-
-                let windowName = window[kCGWindowName as String] as? String ?? ""
-                
 
                 if frontApp.bundleIdentifier == "com.EduAlexxis.Zestz" {
                     continue
                 }
-                
 
                 if bounds.width >= visibleFrame.width * 0.95 && bounds.height >= visibleFrame.height * 0.95 {
                     return true
                 }
             }
         }
-        
+
         return false
     }
 
     private func checkFullscreenState(windowList: [[String: Any]]? = nil) {
         guard let player = player else { return }
-        if WallpaperManager.shared.isPaused {
+        if WallpaperManager.shared.isPaused || WallpaperManager.shared.isScreenLocked {
             if player.rate != 0 {
                 player.pause()
             }
@@ -478,7 +507,7 @@ final class PlayerContainerView: NSView {
         let pauseOnBattery = SettingsManager.shared.pauseOnBattery
         let pauseOnLowPowerMode = SettingsManager.shared.pauseOnLowPowerMode
         let pauseWhenFocused = SettingsManager.shared.pauseWhenFocused
-        
+
         let shouldPause = (pauseInFullscreen && isAnyAppFullscreen(windowList: windowList)) ||
                            (pauseOnBattery && isCurrentlyOnBattery()) ||
                            (pauseOnLowPowerMode && isLowPowerMode()) ||
@@ -493,30 +522,30 @@ final class PlayerContainerView: NSView {
             }
         }
     }
-    
+
     private func checkBatteryState() {
         checkFullscreenState()
     }
-    
+
     private func checkPeriodicStates() {
 
         let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
         let windowList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]]
-        
+
         checkFullscreenState(windowList: windowList)
         checkBatteryState()
-        
+
         let muteWhenInactive = SettingsManager.shared.muteWhenInactive
         let shouldBeMuted = (muteWhenInactive && !isAppActive(windowList: windowList)) || !playAudio
         if shouldBeMuted != lastShouldBeMuted {
             updateVolume()
         }
     }
-    
+
     func isLowPowerMode() -> Bool {
         return ProcessInfo.processInfo.isLowPowerModeEnabled
     }
-    
+
     func isCurrentlyOnBattery() -> Bool {
 
         guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
@@ -534,7 +563,7 @@ final class PlayerContainerView: NSView {
         }
         return false
     }
-    
+
     func isAnyAppFullscreen(windowList: [[String: Any]]? = nil) -> Bool {
         let list: [[String: Any]]
         if let windowList {
@@ -584,5 +613,3 @@ final class PlayerContainerView: NSView {
         fullscreenTimer?.invalidate()
     }
 }
-
-

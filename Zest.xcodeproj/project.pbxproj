@@ -1,0 +1,599 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		BB887D912FE7934400D9C02D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB887D7B2FE7934200D9C02D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB887D822FE7934200D9C02D;
+			remoteInfo = Zest;
+		};
+		BB887D9B2FE7934400D9C02D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB887D7B2FE7934200D9C02D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB887D822FE7934200D9C02D;
+			remoteInfo = Zest;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BB887D832FE7934200D9C02D /* Zest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB887D902FE7934400D9C02D /* ZestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB887D9A2FE7934400D9C02D /* ZestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		BB887D852FE7934200D9C02D /* Zest */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Zest;
+			sourceTree = "<group>";
+		};
+		BB887D932FE7934400D9C02D /* ZestTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ZestTests;
+			sourceTree = "<group>";
+		};
+		BB887D9D2FE7934400D9C02D /* ZestUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ZestUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BB887D802FE7934200D9C02D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB887D8D2FE7934400D9C02D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB887D972FE7934400D9C02D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BB887D7A2FE7934200D9C02D = {
+			isa = PBXGroup;
+			children = (
+				BB887D852FE7934200D9C02D /* Zest */,
+				BB887D932FE7934400D9C02D /* ZestTests */,
+				BB887D9D2FE7934400D9C02D /* ZestUITests */,
+				BB887D842FE7934200D9C02D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BB887D842FE7934200D9C02D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB887D832FE7934200D9C02D /* Zest.app */,
+				BB887D902FE7934400D9C02D /* ZestTests.xctest */,
+				BB887D9A2FE7934400D9C02D /* ZestUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BB887D822FE7934200D9C02D /* Zest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB887DA42FE7934400D9C02D /* Build configuration list for PBXNativeTarget "Zest" */;
+			buildPhases = (
+				BB887D7F2FE7934200D9C02D /* Sources */,
+				BB887D802FE7934200D9C02D /* Frameworks */,
+				BB887D812FE7934200D9C02D /* Resources */,
+				BB887D8E2FE7934400D9C02E /* Build Screen Saver */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				BB887D852FE7934200D9C02D /* Zest */,
+			);
+			name = Zest;
+			packageProductDependencies = (
+			);
+			productName = Zest;
+			productReference = BB887D832FE7934200D9C02D /* Zest.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BB887D8F2FE7934400D9C02D /* ZestTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB887DA72FE7934400D9C02D /* Build configuration list for PBXNativeTarget "ZestTests" */;
+			buildPhases = (
+				BB887D8C2FE7934400D9C02D /* Sources */,
+				BB887D8D2FE7934400D9C02D /* Frameworks */,
+				BB887D8E2FE7934400D9C02D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB887D922FE7934400D9C02D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BB887D932FE7934400D9C02D /* ZestTests */,
+			);
+			name = ZestTests;
+			packageProductDependencies = (
+			);
+			productName = ZestTests;
+			productReference = BB887D902FE7934400D9C02D /* ZestTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BB887D992FE7934400D9C02D /* ZestUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB887DAA2FE7934400D9C02D /* Build configuration list for PBXNativeTarget "ZestUITests" */;
+			buildPhases = (
+				BB887D962FE7934400D9C02D /* Sources */,
+				BB887D972FE7934400D9C02D /* Frameworks */,
+				BB887D982FE7934400D9C02D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB887D9C2FE7934400D9C02D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BB887D9D2FE7934400D9C02D /* ZestUITests */,
+			);
+			name = ZestUITests;
+			packageProductDependencies = (
+			);
+			productName = ZestUITests;
+			productReference = BB887D9A2FE7934400D9C02D /* ZestUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BB887D7B2FE7934200D9C02D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2610;
+				LastUpgradeCheck = 2610;
+				TargetAttributes = {
+					BB887D822FE7934200D9C02D = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
+					BB887D8F2FE7934400D9C02D = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = BB887D822FE7934200D9C02D;
+					};
+					BB887D992FE7934400D9C02D = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = BB887D822FE7934200D9C02D;
+					};
+				};
+			};
+			buildConfigurationList = BB887D7E2FE7934200D9C02D /* Build configuration list for PBXProject "Zest" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BB887D7A2FE7934200D9C02D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BB887D842FE7934200D9C02D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB887D822FE7934200D9C02D /* Zest */,
+				BB887D8F2FE7934400D9C02D /* ZestTests */,
+				BB887D992FE7934400D9C02D /* ZestUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB887D812FE7934200D9C02D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB887D8E2FE7934400D9C02D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB887D982FE7934400D9C02D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BB887D8E2FE7934400D9C02E /* Build Screen Saver */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/ZestScreenSaver/ZestScreenSaverView.swift",
+				"$(SRCROOT)/ZestScreenSaver/Info.plist",
+			);
+			name = "Build Screen Saver";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Zest.saver/Contents/MacOS/Zest",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nSAVER_DIR=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Zest.saver/Contents\"\nSAVER_BIN=\"${SAVER_DIR}/MacOS/Zest\"\n\nmkdir -p \"${SAVER_DIR}/MacOS\"\n\n# Copy Info.plist into the saver bundle\ncp \"${SRCROOT}/ZestScreenSaver/Info.plist\" \"${SAVER_DIR}/Info.plist\"\n\n# Compile the screen saver as a Mach-O bundle, once per architecture being\n# built (ARCHS can list more than one, e.g. \"arm64 x86_64\" for Archive\n# builds — a single unquoted -target would otherwise word-split and break),\n# then combine into a single universal binary via lipo.\n# -module-name ZestScreenSaver keeps symbols isolated.\n# @objc(ZestScreenSaverView) in source makes the class name match NSPrincipalClass.\nTHIN_BINARIES=\"\"\nfor ARCH in ${ARCHS}; do\n  THIN_BIN=\"${TEMP_DIR}/ZestScreenSaver-${ARCH}\"\n  swiftc \\\n    -target \"${ARCH}-apple-macos${MACOSX_DEPLOYMENT_TARGET}\" \\\n    -Xlinker -bundle \\\n    -module-name ZestScreenSaver \\\n    -o \"${THIN_BIN}\" \\\n    -framework ScreenSaver \\\n    -framework AVFoundation \\\n    -framework AppKit \\\n    -framework Foundation \\\n    \"${SRCROOT}/ZestScreenSaver/ZestScreenSaverView.swift\"\n  THIN_BINARIES=\"${THIN_BINARIES} ${THIN_BIN}\"\ndone\n\nlipo -create ${THIN_BINARIES} -output \"${SAVER_BIN}\"\n\necho \"✅ Zest.saver compiled successfully at: ${SAVER_BIN}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BB887D7F2FE7934200D9C02D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB887D8C2FE7934400D9C02D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB887D962FE7934400D9C02D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB887D922FE7934400D9C02D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB887D822FE7934200D9C02D /* Zest */;
+			targetProxy = BB887D912FE7934400D9C02D /* PBXContainerItemProxy */;
+		};
+		BB887D9C2FE7934400D9C02D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB887D822FE7934200D9C02D /* Zest */;
+			targetProxy = BB887D9B2FE7934400D9C02D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BB887DA22FE7934400D9C02D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BB887DA32FE7934400D9C02D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		BB887DA52FE7934400D9C02D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.EduAlexxis.Zestz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BB887DA62FE7934400D9C02D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.EduAlexxis.Zestz;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		BB887DA82FE7934400D9C02D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.EduAlexxis.ZestTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Zest.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Zest";
+			};
+			name = Debug;
+		};
+		BB887DA92FE7934400D9C02D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.EduAlexxis.ZestTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Zest.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Zest";
+			};
+			name = Release;
+		};
+		BB887DAB2FE7934400D9C02D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.EduAlexxis.ZestUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Zest;
+			};
+			name = Debug;
+		};
+		BB887DAC2FE7934400D9C02D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KGUDPSN289;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.EduAlexxis.ZestUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Zest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BB887D7E2FE7934200D9C02D /* Build configuration list for PBXProject "Zest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB887DA22FE7934400D9C02D /* Debug */,
+				BB887DA32FE7934400D9C02D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB887DA42FE7934400D9C02D /* Build configuration list for PBXNativeTarget "Zest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB887DA52FE7934400D9C02D /* Debug */,
+				BB887DA62FE7934400D9C02D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB887DA72FE7934400D9C02D /* Build configuration list for PBXNativeTarget "ZestTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB887DA82FE7934400D9C02D /* Debug */,
+				BB887DA92FE7934400D9C02D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB887DAA2FE7934400D9C02D /* Build configuration list for PBXNativeTarget "ZestUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB887DAB2FE7934400D9C02D /* Debug */,
+				BB887DAC2FE7934400D9C02D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BB887D7B2FE7934200D9C02D /* Project object */;
+}

@@ -4,7 +4,7 @@ import Combine
 
 final class VideoLibraryStore: ObservableObject {
     let objectWillChange = PassthroughSubject<Void, Never>()
-    
+
     @AppStorage("videoLibraryItemsJSON") private var libraryItemsData: Data?
     @AppStorage("videoLibraryBookmarksData") private var libraryBookmarksBlob: Data?
 

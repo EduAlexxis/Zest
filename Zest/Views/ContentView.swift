@@ -6,7 +6,7 @@ struct ContentView: View {
     @AppStorage("lastWallpaperPath") private var lastWallpaperPath: String = ""
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var securityAccessActive = false
-    
+
     @State private var videoURL: URL? = nil
     @AppStorage("lastWallpaperLoop") private var isLooping: Bool = true
     @AppStorage("lastWallpaperPlayAudio") private var playAudio: Bool = false
@@ -14,41 +14,44 @@ struct ContentView: View {
     @AppStorage("lastWallpaperTransform") private var transform: VideoTransform = .none
     @State private var showingPicker = false
     @State private var isAppliedToWallpaper = false
-    
+    @State private var isApplyingWallpaper = false
+    @State private var lockScreenStatusMessage: String? = nil
+    @State private var isCheckingForUpdates = false
+    @State private var updateStatusMessage: String? = nil
+    @State private var updateAvailable = false
+    @State private var latestReleaseURL: URL? = nil
+    @State private var releases: [GitHubRelease] = []
+
     @StateObject private var libraryStore = VideoLibraryStore()
-    
 
     struct ResolvedItem: Identifiable, Equatable {
         let id: UUID
         var item: VideoLibraryItem
         let url: URL
     }
-    
+
     @State private var resolvedItems: [ResolvedItem] = []
     @State private var selectedItem: ResolvedItem? = nil
-    
 
     @State private var isTranscoding = false
     @State private var transcodeProgress: Double = 0.0
     @State private var transcodeError: String? = nil
     @State private var showingErrorAlert = false
-    
 
     @State private var searchText = ""
     @State private var activeTab: String = "Library"
     @State private var hoveredURL: URL? = nil
     @State private var showInspector = false
     @State private var showingSettings = false
-    
+
     @ObservedObject private var settings = SettingsManager.shared
-    
+
     let tabs = ["Library", "Favorites", "Explore", "Updates"]
-    
 
     let columns = [
         GridItem(.adaptive(minimum: 180, maximum: 240), spacing: 16)
     ]
-    
+
     var filteredItems: [ResolvedItem] {
         var baseItems = resolvedItems
         if activeTab == "Favorites" {
@@ -63,7 +66,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     var body: some View {
         ZStack {
             HStack(spacing: 0) {
@@ -76,13 +79,12 @@ struct ContentView: View {
                             Image(systemName: "desktopcomputer")
                                 .font(.title2)
                                 .foregroundStyle(.linearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            
+
                             Text("Zest")
                                 .font(.title2.weight(.bold))
                                 .tracking(0.5)
                         }
                         .padding(.trailing, 16)
-                        
 
                         HStack(spacing: 4) {
                             ForEach(tabs, id: \.self) { tab in
@@ -103,9 +105,8 @@ struct ContentView: View {
                                 .animation(.snappy, value: activeTab)
                             }
                         }
-                        
+
                         Spacer()
-                        
 
                         HStack(spacing: 6) {
                             Image(systemName: "magnifyingglass")
@@ -113,6 +114,12 @@ struct ContentView: View {
                             TextField("Search wallpapers...", text: $searchText)
                                 .textFieldStyle(.plain)
                                 .frame(minWidth: 100, maxWidth: 180)
+                                .onChange(of: searchText) {
+                                    if searchText == "EduAlexxis" {
+                                        hasCompletedOnboarding = false
+                                        searchText = ""
+                                    }
+                                }
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
@@ -122,7 +129,6 @@ struct ContentView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(.white.opacity(0.1), lineWidth: 1)
                         )
-                        
 
                         Button {
                             showingPicker = true
@@ -136,7 +142,6 @@ struct ContentView: View {
                         }
                         .buttonStyle(.plain)
                         .help("Add video from disk")
-                        
 
                         Button {
                             showingSettings = true
@@ -154,9 +159,8 @@ struct ContentView: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 16)
                     .background(.ultraThinMaterial)
-                    
+
                     Divider()
-                    
 
                     if activeTab == "Library" || activeTab == "Favorites" {
                         if filteredItems.isEmpty {
@@ -236,27 +240,113 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
 
-                        VStack(spacing: 12) {
-                            Spacer()
-                            Image(systemName: "arrow.up.circle")
-                                .font(.system(size: 48))
-                                .foregroundStyle(.secondary)
-                            Text("Updates")
-                                .font(.headline)
-                            Text("Zest version 1.0.0. You are up to date!")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Spacer()
+                        VStack(spacing: 0) {
+                            HStack(alignment: .top) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Updates")
+                                        .font(.title2.weight(.bold))
+                                    Text("Zest \(UpdateChecker.shared.currentVersion)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Button {
+                                    checkForUpdates()
+                                } label: {
+                                    if isCheckingForUpdates {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                    } else {
+                                        Label("Check for Updates", systemImage: "arrow.clockwise")
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(isCheckingForUpdates)
+                            }
+                            .padding(24)
+
+                            if let updateStatusMessage {
+                                HStack(spacing: 8) {
+                                    Image(systemName: updateAvailable ? "arrow.up.circle.fill" : "checkmark.circle.fill")
+                                        .foregroundColor(updateAvailable ? .orange : .green)
+                                    Text(updateStatusMessage)
+                                        .font(.subheadline)
+                                    Spacer()
+                                    if updateAvailable, let latestReleaseURL {
+                                        Button("View on GitHub") {
+                                            NSWorkspace.shared.open(latestReleaseURL)
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+                                    }
+                                }
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 16)
+                            }
+
+                            Divider()
+
+                            ScrollView {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Changelog")
+                                        .font(.headline)
+                                        .padding(.top, 16)
+
+                                    if releases.isEmpty {
+                                        Text(isCheckingForUpdates ? "Loading…" : "Couldn't load the changelog. Try Check for Updates again.")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    } else {
+                                        ForEach(releases) { release in
+                                            VStack(alignment: .leading, spacing: 6) {
+                                                HStack {
+                                                    Text((release.name?.isEmpty == false ? release.name! : release.tagName))
+                                                        .font(.headline)
+                                                    if release.prerelease {
+                                                        Text("Pre-release")
+                                                            .font(.caption2.weight(.semibold))
+                                                            .padding(.horizontal, 6)
+                                                            .padding(.vertical, 2)
+                                                            .background(Color.orange.opacity(0.2))
+                                                            .cornerRadius(4)
+                                                            .foregroundColor(.orange)
+                                                    }
+                                                    Spacer()
+                                                    Text(release.tagName)
+                                                        .font(.caption)
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                                if let body = release.body, !body.isEmpty {
+                                                    Text((try? AttributedString(markdown: body)) ?? AttributedString(body))
+                                                        .font(.subheadline)
+                                                        .foregroundStyle(.secondary)
+                                                        .textSelection(.enabled)
+                                                }
+                                            }
+                                            .padding(16)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .background(Color.primary.opacity(0.04))
+                                            .cornerRadius(10)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 24)
+                                .padding(.bottom, 24)
+                            }
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .onAppear {
+                            if releases.isEmpty {
+                                checkForUpdates()
+                            }
+                        }
                     }
                 }
                 .frame(minWidth: 520)
-                
 
                 if showInspector, let selected = selectedItem {
                     Divider()
-                    
+
                     VStack(alignment: .leading, spacing: 0) {
                         HStack {
                             Text("Wallpaper Settings")
@@ -275,9 +365,9 @@ struct ContentView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                         .padding(.bottom, 12)
-                        
+
                         Divider()
-                        
+
                         ScrollView(.vertical, showsIndicators: false) {
                             VStack(alignment: .leading, spacing: 16) {
 
@@ -291,13 +381,12 @@ struct ContentView: View {
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(.white.opacity(0.15), lineWidth: 1)
                                 )
-                                
 
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Wallpaper Title")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    
+
                                     TextField("Wallpaper Name", text: Binding(
                                         get: { selected.item.customName ?? selected.url.lastPathComponent.deletingPathExtension() },
                                         set: { newValue in
@@ -312,20 +401,20 @@ struct ContentView: View {
                                     ))
                                     .textFieldStyle(.roundedBorder)
                                 }
-                                
+
                                 Divider()
-                                
+
                                 VStack(alignment: .leading, spacing: 12) {
                                     Toggle(isOn: $isLooping) {
                                         Text("Loop Video")
                                     }
                                     .toggleStyle(.checkbox)
-                                    
+
                                     Toggle(isOn: $playAudio) {
                                         Text("Play Audio")
                                     }
                                     .toggleStyle(.checkbox)
-                                    
+
                                     Toggle(isOn: Binding(
                                         get: { selected.item.isFavorite },
                                         set: { _ in
@@ -339,7 +428,7 @@ struct ContentView: View {
                                         }
                                     }
                                     .toggleStyle(.checkbox)
-                                    
+
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text("Transform / Rotation")
                                             .font(.caption)
@@ -356,24 +445,31 @@ struct ContentView: View {
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
                         }
-                        
+
                         Divider()
-                        
 
                         VStack(spacing: 8) {
                             Button {
                                 applyWallpaper()
                             } label: {
                                 HStack {
-                                    Image(systemName: "desktopcomputer")
-                                        .foregroundColor(.white)
-                                    Text("Apply to Desktop")
+                                    if isApplyingWallpaper {
+                                        ProgressView()
+                                            .controlSize(.small)
+                                            .padding(.trailing, 4)
+                                        Text("Applying...")
+                                    } else {
+                                        Image(systemName: "desktopcomputer")
+                                            .foregroundColor(.white)
+                                        Text("Apply Wallpaper")
+                                    }
                                 }
                                 .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.large)
-                            
+                            .disabled(isApplyingWallpaper)
+
                             if isAppliedToWallpaper {
                                 Button(role: .destructive) {
                                     WallpaperManager.shared.stop()
@@ -388,6 +484,14 @@ struct ContentView: View {
                                 .buttonStyle(.bordered)
                                 .controlSize(.large)
                             }
+
+                            if let lockScreenStatusMessage {
+                                Text(lockScreenStatusMessage)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
                         .padding(20)
                     }
@@ -398,12 +502,11 @@ struct ContentView: View {
             }
             .frame(minWidth: 800, minHeight: 480)
             .background(.regularMaterial)
-            
 
             if isTranscoding {
                 Color.black.opacity(0.4)
                     .transition(.opacity)
-                
+
                 VStack(spacing: 16) {
                     ProgressView(value: transcodeProgress) {
                         Text("Converting wallpaper video...")
@@ -416,7 +519,7 @@ struct ContentView: View {
                     }
                     .progressViewStyle(.linear)
                     .frame(width: 250)
-                    
+
                     Text("Optimizing video format for macOS playback.")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -431,12 +534,12 @@ struct ContentView: View {
                 .shadow(radius: 10)
                 .transition(.scale.combined(with: .opacity))
             }
-            
+
             if !hasCompletedOnboarding {
                 Color.black.opacity(0.3)
                     .transition(.opacity)
                     .zIndex(90)
-                
+
                 OnboardingOverlayView(hasCompletedOnboarding: $hasCompletedOnboarding)
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
                     .zIndex(100)
@@ -454,21 +557,17 @@ struct ContentView: View {
                 Text("An unknown error occurred during video conversion.")
             }
         })
-        .onDrop(of: [UTType.fileURL.identifier, UTType.item.identifier], isTargeted: nil) { providers in
-            guard let provider = providers.first else { return false }
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, error in
-                var fileURL: URL? = nil
-                if let data = item as? Data {
-                    fileURL = URL(dataRepresentation: data, relativeTo: nil)
-                } else if let url = item as? URL {
-                    fileURL = url
-                } else if let nsURL = item as? NSURL {
-                    fileURL = nsURL as URL
-                }
-                
-                if let fileURL {
+        .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+            guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }) else { return false }
+
+            _ = provider.loadObject(ofClass: NSURL.self) { item, error in
+                if let nsURL = item as? URL {
                     DispatchQueue.main.async {
-                        importVideoURL(fileURL)
+                        importVideoURL(nsURL)
+                    }
+                } else if let nsURL = item as? NSURL {
+                    DispatchQueue.main.async {
+                        importVideoURL(nsURL as URL)
                     }
                 }
             }
@@ -484,16 +583,14 @@ struct ContentView: View {
         }
         .onAppear {
             loadLibraryOnAppear()
-            
+
             if !lastWallpaperPath.isEmpty {
                 let resolvedURL = URL(fileURLWithPath: lastWallpaperPath)
                 self.videoURL = resolvedURL
-                
 
                 if let matched = resolvedItems.first(where: { $0.url.standardizedFileURL.path == resolvedURL.standardizedFileURL.path }) {
                     self.selectedItem = matched
                 }
-                
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     self.applyWallpaper()
@@ -508,7 +605,7 @@ struct ContentView: View {
         }
         .frame(minWidth: 1025, minHeight: 553)
     }
-    
+
     private func importVideoURL(_ url: URL) {
         VideoTranscoder.shared.needsConversion(url: url) { needsConversion in
             DispatchQueue.main.async {
@@ -516,7 +613,7 @@ struct ContentView: View {
                     self.isTranscoding = true
                     self.transcodeProgress = 0.0
                     self.transcodeError = nil
-                    
+
                     VideoTranscoder.shared.transcode(url: url, progressHandler: { progress in
                         DispatchQueue.main.async {
                             self.transcodeProgress = progress
@@ -536,10 +633,10 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private func saveImportedVideo(url: URL, originalName: String) {
         let accessed = url.startAccessingSecurityScopedResource()
-        
+
         var bookmarkData: Data? = nil
         do {
             bookmarkData = try url.bookmarkData(options: [.withSecurityScope], includingResourceValuesForKeys: nil, relativeTo: nil)
@@ -551,13 +648,13 @@ struct ContentView: View {
                 print("Failed to create standard bookmark: \(error)")
             }
         }
-        
+
         if securityAccessActive {
             videoURL?.stopAccessingSecurityScopedResource()
         }
         self.videoURL = url
         self.securityAccessActive = accessed
-        
+
         if let bookmark = bookmarkData {
             var newItem = self.libraryStore.append(bookmark)
             newItem.customName = originalName
@@ -582,18 +679,55 @@ struct ContentView: View {
             }
         }
     }
-    
+
+    private func checkForUpdates() {
+        isCheckingForUpdates = true
+        updateStatusMessage = nil
+
+        UpdateChecker.shared.fetchReleases { result in
+            isCheckingForUpdates = false
+            switch result {
+            case .success(let fetchedReleases):
+                releases = fetchedReleases
+                let currentVersion = UpdateChecker.shared.currentVersion
+                if let latest = fetchedReleases.first(where: { !$0.prerelease }) {
+                    if UpdateChecker.shared.isNewer(latest.tagName, than: currentVersion) {
+                        updateAvailable = true
+                        updateStatusMessage = "A new version (\(latest.tagName)) is available."
+                        latestReleaseURL = URL(string: latest.htmlUrl)
+                    } else {
+                        updateAvailable = false
+                        updateStatusMessage = "You're up to date (v\(currentVersion))."
+                    }
+                } else {
+                    updateAvailable = false
+                    updateStatusMessage = "You're up to date (v\(currentVersion))."
+                }
+            case .failure:
+                updateStatusMessage = "Couldn't check for updates. Check your internet connection."
+            }
+        }
+    }
+
     private func applyWallpaper() {
         guard let url = videoURL else { return }
         self.lastWallpaperPath = url.path
-        
+
+        isApplyingWallpaper = true
+        lockScreenStatusMessage = nil
+
         WallpaperManager.shared.apply(url: url,
                                        loop: isLooping,
                                        playAudio: playAudio,
-                                       transform: transform)
-        isAppliedToWallpaper = true
+                                       transform: transform) { lockScreenMessage in
+            DispatchQueue.main.async {
+                self.isApplyingWallpaper = false
+                self.isAppliedToWallpaper = true
+                self.lockScreenStatusMessage = lockScreenMessage
+            }
+        }
     }
-    
+
     private func loadLibraryOnAppear() {
         resolvedItems.removeAll()
         for item in self.libraryStore.items {
@@ -609,7 +743,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private func selectFromLibrary(_ resolved: ResolvedItem) {
         if securityAccessActive {
             videoURL?.stopAccessingSecurityScopedResource()
@@ -619,7 +753,7 @@ struct ContentView: View {
         self.videoURL = resolved.url
         self.selectedItem = resolved
     }
-    
+
     private func removeFromLibrary(_ resolved: ResolvedItem) {
         if let idx = resolvedItems.firstIndex(where: { $0.id == resolved.id }) {
             resolvedItems.remove(at: idx)
@@ -635,11 +769,11 @@ struct ContentView: View {
         }
         self.libraryStore.remove(id: resolved.id)
     }
-    
+
     private func toggleFavorite(_ resolved: ResolvedItem) {
         var updated = resolved
         updated.item.isFavorite.toggle()
-        
+
         if let idx = resolvedItems.firstIndex(where: { $0.id == resolved.id }) {
             resolvedItems[idx] = updated
         }
@@ -650,20 +784,19 @@ struct ContentView: View {
     }
 }
 
-
 struct VideoCardView: View {
     let url: URL
     let customName: String?
     let isFavorite: Bool
     let isSelected: Bool
     let isHovered: Bool
-    
+
     let onSelect: () -> Void
     let onApply: () -> Void
     let onDelete: () -> Void
     let onReveal: () -> Void
     let onToggleFavorite: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
@@ -671,7 +804,6 @@ struct VideoCardView: View {
                 VideoThumbnailView(url: url)
                     .aspectRatio(16/9, contentMode: .fill)
                     .clipped()
-                
 
                 HStack {
                     Button(action: onToggleFavorite) {
@@ -683,9 +815,8 @@ struct VideoCardView: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
-                    
+
                     Spacer()
-                    
 
                     Menu {
                         Button(action: onApply) {
@@ -711,14 +842,13 @@ struct VideoCardView: View {
                 }
                 .padding(8)
             }
-            
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(customName ?? url.lastPathComponent.deletingPathExtension())
                     .font(.body.weight(.semibold))
                     .foregroundColor(.primary)
                     .lineLimit(1)
-                
+
                 Text("Local Video Wallpaper")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -774,9 +904,10 @@ struct SettingsView: View {
     @ObservedObject private var settings = SettingsManager.shared
     @AppStorage("playAudioInPreview") private var playAudioInPreview: Bool = false
     @State private var activeTab = "General"
-    
-    let tabs = ["General", "Performance", "Audio & Video", "About"]
-    
+    @State private var aerialActionMessage: String?
+
+    let tabs = ["General", "Performance", "Audio", "About"]
+
     var body: some View {
         VStack(spacing: 0) {
 
@@ -784,9 +915,9 @@ struct SettingsView: View {
                 Text("Settings")
                     .font(.title2.weight(.bold))
                     .foregroundColor(.primary)
-                
+
                 Spacer()
-                
+
                 Button {
                     isPresented = false
                 } label: {
@@ -801,7 +932,6 @@ struct SettingsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 20)
             .padding(.bottom, 12)
-            
 
             HStack(spacing: 8) {
                 ForEach(tabs, id: \.self) { tab in
@@ -823,18 +953,17 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
-            
+
             Divider()
-            
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     if activeTab == "General" {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("System Configuration")
+                            Text("Preferences")
                                 .font(.headline)
                                 .foregroundColor(.primary)
-                            
+
                             Toggle(isOn: $settings.launchAtLogin) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Launch at Login")
@@ -845,7 +974,29 @@ struct SettingsView: View {
                                 }
                             }
                             .toggleStyle(.checkbox)
-                            
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("App Theme")
+                                    .font(.body)
+                                Text("Select the visual theme for Zest library UI.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                Picker("", selection: $settings.appTheme) {
+                                    Text("System Default").tag("System")
+                                    Text("Light").tag("Light")
+                                    Text("Dark").tag("Dark")
+                                }
+                                .pickerStyle(.segmented)
+                                .frame(width: 300)
+                            }
+
+                            Divider()
+
+                            Text("Wallpaper Behavior")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
                             Toggle(isOn: $settings.hideDesktopElements) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Hide Desktop Elements")
@@ -856,44 +1007,112 @@ struct SettingsView: View {
                                 }
                             }
                             .toggleStyle(.checkbox)
-                            
-                            Divider()
-                            
+
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("App Theme")
+                                Text("Apply Live Wallpaper To")
                                     .font(.body)
-                                Text("Select the visual theme for Zest library UI.")
+                                Text("Choose where the animated live wallpaper should play.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
-                                
-                                Picker("", selection: $settings.appTheme) {
-                                    Text("System Default").tag("System")
-                                    Text("Light").tag("Light")
-                                    Text("Dark").tag("Dark")
+
+                                Picker("", selection: $settings.wallpaperTargetMode) {
+                                    Text("Desktop Only").tag("desktop")
+                                    Text("Lock Screen Only").tag("lockscreen")
+                                    Text("Both").tag("both")
                                 }
                                 .pickerStyle(.segmented)
-                                .frame(width: 300)
+                                .labelsHidden()
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("External Displays")
+                                    .font(.body)
+                                Text("Choose what to show on external displays to save resources.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                Picker("", selection: $settings.externalDisplayMode) {
+                                    Text("Live Video").tag("live")
+                                    Text("Static Frame").tag("static")
+                                }
+                                .pickerStyle(.segmented)
+                                .labelsHidden()
+                            }
+
+                            if settings.wallpaperTargetMode == "lockscreen" || settings.wallpaperTargetMode == "both" {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "checkmark.seal.fill")
+                                            .foregroundColor(.green)
+                                            .font(.system(size: 18))
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Native Lock Screen Integration")
+                                                .font(.headline)
+                                                .foregroundColor(.green)
+                                            Text("Zest seamlessly injects into macOS Apple Aerials.")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        Spacer()
+                                        Button("System Settings") {
+                                            let url = URL(string: "x-apple.systempreferences:com.apple.Wallpaper-Settings.extension")!
+                                            NSWorkspace.shared.open(url)
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+                                    }
+
+                                    Divider()
+
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Label("Required macOS Setting", systemImage: "info.circle")
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.secondary)
+                                        Text("For the lock screen to work, macOS requires you to manually enable it. Open System Settings > Wallpaper and turn ON **\"Show as screen saver\"** for the active wallpaper.")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+
+                                    Divider()
+
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack(spacing: 8) {
+                                            Button("Restore Original Aerial Wallpaper") {
+                                                let (_, message) = AerialsLockScreenHelper.shared.restoreOriginalWallpaper()
+                                                WallpaperManager.shared.stop()
+                                                aerialActionMessage = message
+                                            }
+                                            .buttonStyle(.bordered)
+                                            .controlSize(.small)
+
+                                            if let aerialActionMessage {
+                                                Text(aerialActionMessage)
+                                                    .font(.caption2)
+                                                    .foregroundColor(.secondary)
+                                            }
+                                        }
+
+                                        Text("Stops Zest's live wallpaper and puts Apple's original Aerial video back. You'll need to hit Apply again afterward — it won't come back on its own.")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary.opacity(0.8))
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+                                .padding(12)
+                                .background(Color.primary.opacity(0.04))
+                                .cornerRadius(10)
                             }
                         }
                         .padding(.vertical, 8)
-                        
+
                     } else if activeTab == "Performance" {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Wallpaper Automation & Resources")
+                            Text("Energy Saver & Pausing")
                                 .font(.headline)
                                 .foregroundColor(.primary)
-                            
-                            Toggle(isOn: $settings.muteWhenInactive) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Mute when using other apps")
-                                        .font(.body)
-                                    Text("Mutes the desktop wallpaper audio when Zest is not the active app.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .toggleStyle(.checkbox)
-                            
+
                             Toggle(isOn: $settings.pauseInFullscreen) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Stop when in fullscreen")
@@ -904,7 +1123,7 @@ struct SettingsView: View {
                                 }
                             }
                             .toggleStyle(.checkbox)
-                            
+
                             Toggle(isOn: $settings.pauseWhenFocused) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Pause when focused")
@@ -915,7 +1134,7 @@ struct SettingsView: View {
                                 }
                             }
                             .toggleStyle(.checkbox)
-                            
+
                             Toggle(isOn: $settings.pauseOnBattery) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Pause on battery power")
@@ -926,7 +1145,7 @@ struct SettingsView: View {
                                 }
                             }
                             .toggleStyle(.checkbox)
-                            
+
                             Toggle(isOn: $settings.pauseOnLowPowerMode) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Pause when in low power mode")
@@ -939,13 +1158,26 @@ struct SettingsView: View {
                             .toggleStyle(.checkbox)
                         }
                         .padding(.vertical, 8)
-                        
-                    } else if activeTab == "Audio & Video" {
+
+                    } else if activeTab == "Audio" {
                         VStack(alignment: .leading, spacing: 20) {
-                            Text("Playback Preferences")
+                            Text("Volume & Muting")
                                 .font(.headline)
                                 .foregroundColor(.primary)
-                            
+
+                            Toggle(isOn: $settings.muteWhenInactive) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Mute when using other apps")
+                                        .font(.body)
+                                    Text("Mutes the desktop wallpaper audio when Zest is not the active app.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .toggleStyle(.checkbox)
+
+                            Divider()
+
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Text("Global Wallpaper Volume")
@@ -955,17 +1187,34 @@ struct SettingsView: View {
                                         .font(.caption.monospacedDigit())
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 Slider(value: $settings.volume, in: 0...1)
                                     .accentColor(.accentColor)
-                                
+
                                 Text("Applies a global volume scale to all playing desktop video wallpapers.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             Divider()
-                            
+
+                            Toggle(isOn: $playAudioInPreview) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Play Audio in Preview")
+                                        .font(.body)
+                                    Text("Allows wallpaper audio to play while previewing videos in the app.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .toggleStyle(.checkbox)
+
+                            Divider()
+
+                            Text("Audio Transitions")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Text("Fade In Duration")
@@ -975,15 +1224,15 @@ struct SettingsView: View {
                                         .font(.caption.monospacedDigit())
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 Slider(value: $settings.fadeInDuration, in: 0...5, step: 0.1)
                                     .accentColor(.accentColor)
-                                
+
                                 Text("Transition time to fade audio in when activating wallpapers or unmuting.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
-                            
+
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Text("Fade Out Duration")
@@ -993,45 +1242,32 @@ struct SettingsView: View {
                                         .font(.caption.monospacedDigit())
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 Slider(value: $settings.fadeOutDuration, in: 0...5, step: 0.1)
                                     .accentColor(.accentColor)
-                                
+
                                 Text("Transition time to fade audio out when deactivating wallpapers or muting.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                              }
-                             
-                             Divider()
-                             
-                             Toggle(isOn: $playAudioInPreview) {
-                                 VStack(alignment: .leading, spacing: 2) {
-                                     Text("Play Audio in Preview")
-                                         .font(.body)
-                                     Text("Allows wallpaper audio to play while previewing videos in the app.")
-                                         .font(.caption)
-                                         .foregroundColor(.secondary)
-                                 }
-                             }
-                             .toggleStyle(.checkbox)
-                         }
-                         .padding(.vertical, 8)
-                     } else if activeTab == "About" {
+                          }
+                          .padding(.vertical, 8)
+                      } else if activeTab == "About" {
                          VStack(spacing: 16) {
                              Image(systemName: "heart.fill")
                                  .font(.system(size: 40))
                                  .foregroundColor(.red)
                                  .shadow(color: .red.opacity(0.3), radius: 8, x: 0, y: 4)
                                  .padding(.top, 8)
-                             
+
                              Text("Zest")
                                  .font(.title.weight(.bold))
                                  .foregroundColor(.primary)
-                             
-                             Text("Version 1.0.0")
+
+                             Text("Version 1.1")
                                  .font(.subheadline)
                                  .foregroundColor(.secondary)
-                             
+
                              VStack(spacing: 4) {
                                  Text("Made with love by")
                                      .font(.body)
@@ -1040,7 +1276,7 @@ struct SettingsView: View {
                                      .font(.headline.weight(.semibold))
                                      .foregroundStyle(.linearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing))
                              }
-                             
+
                              Text("Thank you so much for using Zest! If you enjoy the app and want to support its development, you can support me by buying me a coffee.")
                                  .font(.caption)
                                  .foregroundColor(.secondary)
@@ -1048,7 +1284,7 @@ struct SettingsView: View {
                                  .padding(.horizontal, 24)
                                  .lineLimit(nil)
                                  .fixedSize(horizontal: false, vertical: true)
-                             
+
                              Button {
                                  if let url = URL(string: "https://buymeacoffee.com/EduAlexxis") {
                                      NSWorkspace.shared.open(url)
@@ -1067,6 +1303,7 @@ struct SettingsView: View {
                              }
                              .buttonStyle(.plain)
                              .padding(.top, 8)
+
                          }
                          .frame(maxWidth: .infinity)
                          .padding(.vertical, 8)
@@ -1075,9 +1312,8 @@ struct SettingsView: View {
                  .padding(20)
             }
             .frame(height: 350)
-            
+
             Divider()
-            
 
             HStack {
                 Spacer()
@@ -1098,26 +1334,36 @@ struct OnboardingOverlayView: View {
     @Binding var hasCompletedOnboarding: Bool
     @State private var currentStep = 0
     @ObservedObject private var settings = SettingsManager.shared
-    
+    @State private var ffmpegFound: Bool? = nil
+    @State private var homebrewAvailable = false
+    @State private var isInstallingFFmpeg = false
+    @State private var installOutputTail = ""
+    @State private var installFailed = false
+    @State private var showingInstallConfirmation = false
+    @State private var isInstallingHomebrew = false
+    @State private var homebrewInstallFailed = false
+    @State private var showingHomebrewInstallConfirmation = false
+
+    private let homebrewInstallCommand = #"/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)""#
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .font(.title3)
                     .foregroundStyle(.linearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing))
-                
+
                 Text("Zest")
                     .font(.title3.weight(.bold))
                     .tracking(0.5)
-                
+
                 Spacer()
             }
             .padding(.horizontal, 24)
             .padding(.top, 20)
             .padding(.bottom, 16)
-            
+
             Divider()
-            
 
             ZStack {
                 if currentStep == 0 {
@@ -1129,11 +1375,11 @@ struct OnboardingOverlayView: View {
                             .foregroundStyle(.linearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .shadow(color: .orange.opacity(0.3), radius: 10, x: 0, y: 5)
                             .scaleEffect(1.1)
-                        
+
                         Text("Welcome to Zest")
                             .font(.title.weight(.bold))
                             .foregroundColor(.primary)
-                        
+
                         Text("A lightweight, premium video wallpaper engine designed specifically for macOS. Bring your desktop to life with smooth audio integration and resource automation.")
                             .font(.body)
                             .foregroundColor(.secondary)
@@ -1143,30 +1389,30 @@ struct OnboardingOverlayView: View {
                         Spacer()
                     }
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                    
+
                 } else if currentStep == 1 {
 
                     VStack(spacing: 20) {
-                        Text("Optimized & Automated")
+                        Text("Why Zest?")
                             .font(.title2.weight(.bold))
                             .foregroundColor(.primary)
                             .padding(.top, 16)
-                        
+
                         VStack(alignment: .leading, spacing: 14) {
                             HStack(alignment: .top, spacing: 12) {
-                                Image(systemName: "bolt.fill")
+                                Image(systemName: "lock.display")
                                     .font(.title2)
                                     .foregroundColor(.orange)
                                     .frame(width: 24)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("FFmpeg AV1 Transcoding")
+                                    Text("Native, Everywhere")
                                         .font(.headline)
-                                    Text("Incompatible codecs like AV1 are automatically converted in the background for flawless native playback.")
+                                    Text("Play any video as your Desktop background or directly on your Lock Screen — integrated natively into macOS, not a floating overlay window.")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
                             }
-                            
+
                             HStack(alignment: .top, spacing: 12) {
                                 Image(systemName: "play.slash.fill")
                                     .font(.title2)
@@ -1180,7 +1426,7 @@ struct OnboardingOverlayView: View {
                                         .foregroundColor(.secondary)
                                 }
                             }
-                            
+
                             HStack(alignment: .top, spacing: 12) {
                                 Image(systemName: "speaker.wave.2.fill")
                                     .font(.title2)
@@ -1196,19 +1442,90 @@ struct OnboardingOverlayView: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        
+
                         Spacer()
                     }
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                    
+
                 } else if currentStep == 2 {
+                    VStack(spacing: 16) {
+                        Text("Apply Live Wallpaper To")
+                            .font(.title2.weight(.bold))
+                            .foregroundColor(.primary)
+                            .padding(.top, 16)
+
+                        VStack(spacing: 14) {
+                            Text("Choose where the animated live wallpaper should play.")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            Picker("", selection: $settings.wallpaperTargetMode) {
+                                Text("Desktop Only").tag("desktop")
+                                Text("Lock Screen Only").tag("lockscreen")
+                                Text("Both").tag("both")
+                            }
+                            .pickerStyle(.segmented)
+                            .frame(width: 320)
+                        }
+                        .padding(.horizontal, 24)
+
+                        Spacer()
+                    }
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+
+                } else if currentStep == 3 {
+                    VStack(spacing: 16) {
+                        Text("Setup Required")
+                            .font(.title2.weight(.bold))
+                            .foregroundColor(.primary)
+                            .padding(.top, 16)
+
+                        VStack(alignment: .center, spacing: 14) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 44))
+                                .foregroundColor(.secondary)
+
+                            Text("To enable Zest to smoothly sync videos to your Lock Screen, you must first set your system wallpaper to an Apple Aerial wallpaper.")
+                                .font(.body)
+                                .foregroundColor(.primary)
+                                .multilineTextAlignment(.center)
+
+                            Text("Select any video wallpaper. You only need to do this once!")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+
+                            Button {
+                                let url = URL(string: "x-apple.systempreferences:com.apple.Wallpaper-Settings.extension")!
+                                NSWorkspace.shared.open(url)
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "gearshape.fill")
+                                    Text("Open Wallpaper Settings")
+                                }
+                                .font(.headline)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.secondary)
+                            .padding(.top, 4)
+                        }
+                        .padding(.horizontal, 24)
+
+                        Spacer()
+                    }
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+
+                } else if currentStep == 4 {
 
                     VStack(spacing: 16) {
                         Text("Configure Preferences")
                             .font(.title2.weight(.bold))
                             .foregroundColor(.primary)
                             .padding(.top, 16)
-                        
+
                         VStack(spacing: 14) {
                             Toggle(isOn: $settings.launchAtLogin) {
                                 VStack(alignment: .leading, spacing: 2) {
@@ -1220,10 +1537,10 @@ struct OnboardingOverlayView: View {
                                 }
                             }
                             .toggleStyle(.checkbox)
-                            
+
                             Divider()
                                 .padding(.horizontal, 24)
-                            
+
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Select Theme")
                                     .font(.headline)
@@ -1237,12 +1554,152 @@ struct OnboardingOverlayView: View {
                             }
                         }
                         .padding(.horizontal, 24)
-                        
+
                         Spacer()
                     }
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                    
-                } else if currentStep == 3 {
+
+                } else if currentStep == 5 {
+                    VStack(spacing: 14) {
+                        Text("Install ffmpeg (Recommended)")
+                            .font(.title2.weight(.bold))
+                            .foregroundColor(.primary)
+                            .padding(.top, 16)
+
+                        VStack(alignment: .center, spacing: 12) {
+                            Image(systemName: ffmpegFound == true ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(ffmpegFound == true ? .green : .orange)
+
+                            if ffmpegFound == true {
+                                Text("ffmpeg is installed. Zest will use it for every import, giving you the broadest video format support (including AV1).")
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                    .multilineTextAlignment(.center)
+                            } else {
+                                Text("We recommend installing ffmpeg. Zest uses it for every video import when available — it handles far more formats/codecs than macOS alone, and it's required specifically for AV1 sources. Without it, most videos still work, but AV1 videos can't be converted.")
+                                    .font(.callout)
+                                    .foregroundColor(.primary)
+                                    .multilineTextAlignment(.center)
+
+                                if isInstallingFFmpeg {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                    Text(installOutputTail.isEmpty ? "Installing via Homebrew…" : installOutputTail)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                        .truncationMode(.head)
+                                } else if homebrewAvailable {
+                                    Button {
+                                        showingInstallConfirmation = true
+                                    } label: {
+                                        Label("Install ffmpeg via Homebrew", systemImage: "arrow.down.circle.fill")
+                                    }
+                                    .buttonStyle(.borderedProminent)
+
+                                    Text("Or install it yourself:")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                        .padding(.top, 2)
+                                } else if isInstallingHomebrew {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                    Text(installOutputTail.isEmpty ? "Installing Homebrew…" : installOutputTail)
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                        .truncationMode(.head)
+                                } else {
+                                    Text("Homebrew isn't installed. Zest can install it for you, then ffmpeg — or you can do both yourself in Terminal.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+
+                                    Button {
+                                        showingHomebrewInstallConfirmation = true
+                                    } label: {
+                                        Label("Install Homebrew", systemImage: "arrow.down.circle.fill")
+                                    }
+                                    .buttonStyle(.borderedProminent)
+
+                                    Text("Or install it yourself:")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                        .padding(.top, 2)
+                                }
+
+                                if !homebrewAvailable && !isInstallingFFmpeg && !isInstallingHomebrew {
+                                    HStack(spacing: 10) {
+                                        Button {
+                                            copyToPasteboard(homebrewInstallCommand)
+                                        } label: {
+                                            Label("Copy Homebrew Install", systemImage: "doc.on.doc")
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+
+                                        Button {
+                                            copyToPasteboard("brew install ffmpeg")
+                                        } label: {
+                                            Label("Copy ffmpeg Install", systemImage: "doc.on.doc")
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+                                    }
+                                }
+
+                                if !isInstallingFFmpeg && !isInstallingHomebrew {
+                                    HStack(spacing: 10) {
+                                        if homebrewAvailable {
+                                            Button {
+                                                copyToPasteboard("brew install ffmpeg")
+                                            } label: {
+                                                Label("Copy Command", systemImage: "doc.on.doc")
+                                            }
+                                            .buttonStyle(.bordered)
+                                            .controlSize(.small)
+                                        }
+
+                                        Button {
+                                            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Utilities/Terminal.app"))
+                                        } label: {
+                                            Label("Open Terminal", systemImage: "terminal")
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .controlSize(.small)
+
+                                        Button("Check Again") {
+                                            refreshFFmpegStatus()
+                                        }
+                                        .buttonStyle(.borderless)
+                                        .controlSize(.small)
+                                    }
+                                }
+
+                                if installFailed {
+                                    Text("ffmpeg installation failed. Try running \"brew install ffmpeg\" manually in Terminal.")
+                                        .font(.caption2)
+                                        .foregroundColor(.red)
+                                }
+
+                                if homebrewInstallFailed {
+                                    Text("Homebrew installation failed or needs your Mac password to finish (which Zest can't supply). Please install it yourself in Terminal — command copied above.")
+                                        .font(.caption2)
+                                        .foregroundColor(.red)
+                                        .multilineTextAlignment(.center)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 24)
+
+                        Spacer()
+                    }
+                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
+                    .onAppear {
+                        refreshFFmpegStatus()
+                    }
+
+                } else if currentStep == 6 {
 
                     VStack(spacing: 12) {
                         Spacer()
@@ -1250,11 +1707,11 @@ struct OnboardingOverlayView: View {
                             .font(.system(size: 44))
                             .foregroundColor(.red)
                             .shadow(color: .red.opacity(0.3), radius: 8, x: 0, y: 4)
-                        
+
                         Text("Thank You!")
                             .font(.title.weight(.bold))
                             .foregroundColor(.primary)
-                        
+
                         VStack(spacing: 2) {
                             Text("Zest was made with love by")
                                 .font(.body)
@@ -1263,7 +1720,7 @@ struct OnboardingOverlayView: View {
                                 .font(.headline.weight(.semibold))
                                 .foregroundStyle(.linearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing))
                         }
-                        
+
                         Text("Import video wallpapers into your library by clicking the + button or dragging files directly onto the app window. To access options, look for Zest inside your menu bar.")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -1271,7 +1728,7 @@ struct OnboardingOverlayView: View {
                             .lineLimit(nil)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.horizontal, 32)
-                        
+
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 hasCompletedOnboarding = true
@@ -1288,7 +1745,7 @@ struct OnboardingOverlayView: View {
                         }
                         .buttonStyle(.plain)
                         .padding(.top, 4)
-                        
+
                         Spacer()
                     }
                     .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
@@ -1296,39 +1753,44 @@ struct OnboardingOverlayView: View {
             }
             .frame(height: 280)
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: currentStep)
-            
+
             Divider()
-            
 
             HStack {
 
                 HStack(spacing: 6) {
-                    ForEach(0..<4) { step in
+                    ForEach(0..<7) { step in
                         Circle()
                             .fill(currentStep == step ? Color.orange : Color.white.opacity(0.2))
                             .frame(width: 6, height: 6)
                             .animation(.snappy, value: currentStep)
                     }
                 }
-                
+
                 Spacer()
-                
 
                 if currentStep > 0 {
                     Button("Back") {
                         withAnimation {
-                            currentStep -= 1
+                            if currentStep == 4 && settings.wallpaperTargetMode == "desktop" {
+                                currentStep -= 2
+                            } else {
+                                currentStep -= 1
+                            }
                         }
                     }
                     .controlSize(.large)
                     .buttonStyle(.borderless)
                 }
-                
 
-                if currentStep < 3 {
+                if currentStep < 6 {
                     Button("Next") {
                         withAnimation {
-                            currentStep += 1
+                            if currentStep == 2 && settings.wallpaperTargetMode == "desktop" {
+                                currentStep += 2
+                            } else {
+                                currentStep += 1
+                            }
                         }
                     }
                     .buttonStyle(.borderedProminent)
@@ -1346,6 +1808,70 @@ struct OnboardingOverlayView: View {
                 .stroke(.white.opacity(0.15), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.4), radius: 20, x: 0, y: 10)
+        .alert("Install ffmpeg?", isPresented: $showingInstallConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Install") {
+                startFFmpegInstall()
+            }
+        } message: {
+            Text("Zest will run \"brew install ffmpeg\" in the background using your existing Homebrew install. This downloads and installs ffmpeg from Homebrew's servers onto your Mac.")
+        }
+        .alert("Install Homebrew?", isPresented: $showingHomebrewInstallConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Install") {
+                startHomebrewInstall()
+            }
+        } message: {
+            Text("Zest will run Homebrew's official install script in the background, then install ffmpeg once it's done. This downloads and runs a script from Homebrew's servers, and may ask for your Mac password in a way Zest can't answer — if that happens, the install will fail and you'll need to run it yourself in Terminal instead.")
+        }
+    }
+
+    private func refreshFFmpegStatus() {
+        ffmpegFound = VideoTranscoder.shared.hasFFmpeg()
+        homebrewAvailable = VideoTranscoder.shared.homebrewPath() != nil
+        installFailed = false
+    }
+
+    private func startFFmpegInstall() {
+        isInstallingFFmpeg = true
+        installFailed = false
+        installOutputTail = ""
+
+        VideoTranscoder.shared.installFFmpegViaHomebrew(outputHandler: { chunk in
+            if let lastLine = chunk.split(separator: "\n").last {
+                installOutputTail = String(lastLine)
+            }
+        }, completion: { success in
+            isInstallingFFmpeg = false
+            installFailed = !success
+            ffmpegFound = VideoTranscoder.shared.hasFFmpeg()
+        })
+    }
+
+    private func startHomebrewInstall() {
+        isInstallingHomebrew = true
+        homebrewInstallFailed = false
+        installOutputTail = ""
+
+        VideoTranscoder.shared.installHomebrew(outputHandler: { chunk in
+            if let lastLine = chunk.split(separator: "\n").last {
+                installOutputTail = String(lastLine)
+            }
+        }, completion: { success in
+            isInstallingHomebrew = false
+            homebrewInstallFailed = !success
+            homebrewAvailable = VideoTranscoder.shared.homebrewPath() != nil
+
+            if success && homebrewAvailable {
+                startFFmpegInstall()
+            }
+        })
+    }
+
+    private func copyToPasteboard(_ string: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(string, forType: .string)
     }
 }
 
@@ -1353,6 +1879,3 @@ struct OnboardingOverlayView: View {
     ContentView()
         .frame(width: 800, height: 500)
 }
-
-
-

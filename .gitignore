@@ -7,3 +7,5 @@ default.profraw
 xcuserdata/
 DerivedData/
 build/
+*.saver/
+tools/snapshots/
